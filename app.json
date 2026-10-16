@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "RPS Bash",
+    "slug": "rps-bash",
+    "scheme": "stillmothrpsbash",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0B2E28",
+    "ios": {
+      "bundleIdentifier": "com.stillmoth.rpsbash",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.stillmoth.rpsbash",
+      "adaptiveIcon": {
+        "backgroundColor": "#16584B",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 220,
+          "resizeMode": "contain",
+          "backgroundColor": "#0B2E28"
+        }
+      ],
+      "expo-router",
+      "expo-audio"
+    ]
+  }
+}
