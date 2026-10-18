@@ -39,3 +39,7 @@ Docs: https://docs.expo.dev/eas/index.md
 - If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
 - Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
 - Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
+
+## Local testing on Android
+
+The owner tests on a Windows PC with a dev build (`npm run android` once, then `npm start`), Expo Go (`npm run go`) or a local APK (`npm run apk`); see docs/building-on-windows.md. A dev build only needs rebuilding after native changes, so when a pull request adds or upgrades a library with native code, changes `app.json`, or changes anything under `modules/`, say in the PR description that the dev build needs rebuilding with `npm run android`.

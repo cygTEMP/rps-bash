@@ -7,6 +7,7 @@
     "expo-asset": "~57.0.20",
     "expo-audio": "~57.0.5",
     "expo-constants": "~57.0.22",
+    "expo-dev-client": "~57.0.20",
     "expo-haptics": "~57.0.3",
     "expo-linear-gradient": "~57.0.2",
     "expo-linking": "~57.0.13",
@@ -34,7 +35,9 @@
   },
   "scripts": {
     "start": "expo start",
+    "go": "expo start --go",
     "android": "expo run:android",
+    "apk": "node scripts/android-apk.js",
     "ios": "expo run:ios",
     "lint": "expo lint",
     "test": "jest",

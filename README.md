@@ -7,14 +7,17 @@ Built with Expo (React Native + TypeScript), the same setup as Natural Wake-Up a
 ## Run it
 
 ```bash
-npm install
-npx expo start          # scan the QR code with the Expo Go app (SDK 57) on your phone
+npm ci
+npm run android         # build and install the dev build on a USB-connected phone (once)
+npm start               # live reload into the dev build: scan the QR code with the phone's camera
+npm run go              # or live reload into the Expo Go app (SDK 57), no build needed
+npm run apk             # or a standalone test APK, same as the GitHub build
 npm test                # rules and scoring tests
 npm run lint
 npm run typecheck
 ```
 
-Everything the prototype uses (sound, haptics, animation) works in Expo Go, so day-to-day testing needs no build. See [docs/building-on-windows.md](docs/building-on-windows.md) for Expo Go and local APK builds on a Windows PC.
+Everything the prototype uses (sound, haptics, animation) works in Expo Go as well as the dev build. See [docs/building-on-windows.md](docs/building-on-windows.md) for the one-time Windows PC setup and which way to use when.
 
 ## How it plays (Phase 1 prototype)
 
