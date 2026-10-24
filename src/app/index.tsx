@@ -6,7 +6,7 @@ import { Button } from '../components/Button';
 import { Felt } from '../components/Felt';
 import { GearIcon } from '../components/GearIcon';
 import { MoveCard } from '../components/MoveCard';
-import { presetLabel, PRESETS } from '../core/rules';
+import { customPreset, MAX_CUSTOM_WINS, MIN_CUSTOM_WINS, Preset, presetLabel, PRESETS } from '../core/rules';
 import { useSettings } from '../services/settings';
 import { loadSounds } from '../services/sound';
 import { colors } from '../theme';
@@ -35,7 +35,7 @@ export default function Home() {
         <View style={styles.section}>
           <Text style={styles.label}>Rules</Text>
           <View style={styles.presets}>
-            {PRESETS.map((p) => {
+            {[...PRESETS, customPreset(settings.customWins)].map((p: Preset) => {
               const selected = p.id === preset;
               return (
                 <Pressable
@@ -47,7 +47,7 @@ export default function Home() {
                   style={[styles.preset, selected && styles.presetSelected]}
                 >
                   <Text style={[styles.presetBlurb, selected && styles.presetBlurbSelected]}>
-                    {p.bestOf === 1 ? 'One throw' : 'Best'}
+                    {p.id === 'custom' ? 'Custom' : p.bestOf === 1 ? 'One throw' : 'Best'}
                   </Text>
                   <Text style={[styles.presetName, selected && styles.presetNameSelected]}>
                     {p.wins} of {p.bestOf}
@@ -56,6 +56,25 @@ export default function Home() {
               );
             })}
           </View>
+          {preset === 'custom' && (
+            <View style={styles.custom}>
+              <Step
+                label="−"
+                name="Fewer wins"
+                disabled={settings.customWins <= MIN_CUSTOM_WINS}
+                onPress={() => update({ customWins: settings.customWins - 1 })}
+              />
+              <Text style={styles.customText} accessibilityLiveRegion="polite">
+                First to {settings.customWins} wins
+              </Text>
+              <Step
+                label="+"
+                name="More wins"
+                disabled={settings.customWins >= MAX_CUSTOM_WINS}
+                onPress={() => update({ customWins: settings.customWins + 1 })}
+              />
+            </View>
+          )}
         </View>
 
         <View style={styles.section}>
@@ -77,6 +96,32 @@ export default function Home() {
         </Pressable>
       </View>
     </Felt>
+  );
+}
+
+function Step({
+  label,
+  name,
+  disabled,
+  onPress,
+}: {
+  label: string;
+  name: string;
+  disabled: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={name}
+      accessibilityState={{ disabled }}
+      disabled={disabled}
+      onPress={onPress}
+      hitSlop={6}
+      style={({ pressed }) => [styles.step, disabled && styles.stepDisabled, pressed && styles.stepPressed]}
+    >
+      <Text style={styles.stepText}>{label}</Text>
+    </Pressable>
   );
 }
 
@@ -113,6 +158,19 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   presetBlurbSelected: { color: colors.cardText, opacity: 0.75 },
+  custom: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16 },
+  customText: { color: colors.text, fontSize: 17, fontWeight: '800', minWidth: 130, textAlign: 'center' },
+  step: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.buttonGhost,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepDisabled: { opacity: 0.35 },
+  stepPressed: { transform: [{ scale: 0.95 }] },
+  stepText: { color: colors.text, fontSize: 22, fontWeight: '800' },
   gear: {
     position: 'absolute',
     top: 16,

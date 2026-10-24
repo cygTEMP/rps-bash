@@ -11,6 +11,7 @@ import { botQueue } from '../core/bot';
 import { isTiebreak, MatchState, newMatch, Pair, playRound, queueLength, RoundResult, Side } from '../core/match';
 import { Move, presetById, winsNeeded } from '../core/rules';
 import { recordPartyWinner } from '../services/party';
+import { useSettings } from '../services/settings';
 import { colors } from '../theme';
 
 type Phase =
@@ -36,7 +37,8 @@ export default function MatchScreen() {
   }>();
   const pass = params.mode === 'pass';
   const party = params.round !== undefined && params.index !== undefined;
-  const settings = presetById(params.preset).settings;
+  const { settings: saved } = useSettings();
+  const settings = presetById(params.preset, saved.customWins).settings;
   const names: Pair<string> = party
     ? [params.p1 || 'Player 1', params.p2 || 'Player 2']
     : pass

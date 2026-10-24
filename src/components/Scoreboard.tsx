@@ -12,6 +12,9 @@ interface Props {
   flipped?: boolean;
 }
 
+/** Beyond this many wins needed, the pips become a count so the row still fits. */
+const MAX_PIPS = 6;
+
 /** One player's side of the table: name, throw wins as pips, and bragging points. */
 export function Scoreboard({ name, color, wins, winsNeeded, points, flipped }: Props) {
   return (
@@ -23,11 +26,20 @@ export function Scoreboard({ name, color, wins, winsNeeded, points, flipped }: P
       <View style={styles.left}>
         <View style={[styles.dot, { backgroundColor: color }]} />
         <Text style={styles.name}>{name}</Text>
-        <View style={styles.pips}>
-          {Array.from({ length: winsNeeded }, (_, i) => (
-            <View key={i} style={[styles.pip, i < wins && { backgroundColor: colors.gold, borderColor: colors.gold }]} />
-          ))}
-        </View>
+        {winsNeeded <= MAX_PIPS ? (
+          <View style={styles.pips}>
+            {Array.from({ length: winsNeeded }, (_, i) => (
+              <View
+                key={i}
+                style={[styles.pip, i < wins && { backgroundColor: colors.gold, borderColor: colors.gold }]}
+              />
+            ))}
+          </View>
+        ) : (
+          <Text style={styles.count}>
+            {wins}/{winsNeeded}
+          </Text>
+        )}
       </View>
       <View style={styles.right}>
         <CountUp value={points} style={styles.points} />
@@ -50,6 +62,7 @@ const styles = StyleSheet.create({
   dot: { width: 12, height: 12, borderRadius: 6 },
   name: { color: colors.text, fontSize: 20, fontWeight: '800' },
   pips: { flexDirection: 'row', gap: 6, marginLeft: 4 },
+  count: { color: colors.gold, fontSize: 18, fontWeight: '900', marginLeft: 4, fontVariant: ['tabular-nums'] },
   pip: { width: 14, height: 14, borderRadius: 7, borderWidth: 2, borderColor: colors.slotBorder },
   right: { flexDirection: 'row', alignItems: 'baseline', gap: 4 },
   points: { color: colors.gold, fontSize: 26, fontWeight: '900', fontVariant: ['tabular-nums'] },

@@ -1,7 +1,17 @@
 import { botQueue, fillQueue } from '../bot';
 import { CHALLENGES, drawChallenge } from '../challenges';
 import { isTiebreak, newMatch, playRound, queueLength } from '../match';
-import { compare, Move, presetById, presetLabel, PRESETS, RuleSettings, winsNeeded } from '../rules';
+import {
+  compare,
+  customPreset,
+  MAX_CUSTOM_WINS,
+  Move,
+  presetById,
+  presetLabel,
+  PRESETS,
+  RuleSettings,
+  winsNeeded,
+} from '../rules';
 
 const classic: RuleSettings = { bestOf: 3, loadTimerSeconds: 0 };
 
@@ -28,16 +38,18 @@ describe('settings', () => {
     expect(presetById('quick').settings.bestOf).toBe(1);
   });
 
-  it('offers 1 of 1 up to best 6 of 11', () => {
-    expect(PRESETS.map(presetLabel)).toEqual([
-      '1 of 1',
-      'Best 2 of 3',
-      'Best 3 of 5',
-      'Best 4 of 7',
-      'Best 5 of 9',
-      'Best 6 of 11',
-    ]);
+  it('offers 1 of 1 up to best 5 of 9, then custom', () => {
+    expect(PRESETS.map(presetLabel)).toEqual(['1 of 1', 'Best 2 of 3', 'Best 3 of 5', 'Best 4 of 7', 'Best 5 of 9']);
     for (const p of PRESETS) expect(winsNeeded(p.settings)).toBe(p.wins);
+  });
+
+  it('works out a custom match length from the wins needed, 6 to 20', () => {
+    expect(presetLabel(customPreset(12))).toBe('Best 12 of 23');
+    expect(winsNeeded(customPreset(12).settings)).toBe(12);
+    expect(customPreset(50).wins).toBe(MAX_CUSTOM_WINS);
+    expect(customPreset(1).wins).toBe(6);
+    expect(presetById('custom', 7).bestOf).toBe(13);
+    expect(presetById('best11').id).toBe('custom');
   });
 });
 

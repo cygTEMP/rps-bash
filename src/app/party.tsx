@@ -36,7 +36,7 @@ export default function PartySetup() {
           <Text style={styles.title}>Party bracket</Text>
           <Text style={styles.hint}>
             Everyone plays a knockout bracket on this phone, passing it along for each match. Matches are{' '}
-            {presetLabel(presetById(settings.preset)).toLowerCase()}.
+            {presetLabel(presetById(settings.preset, settings.customWins)).toLowerCase()}.
           </Text>
 
           <View style={styles.counter}>

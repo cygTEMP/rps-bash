@@ -271,7 +271,11 @@ interface Pop {
 /** One dot per throw, coloured by who won it, so the middle reads the same from either side. */
 function Dots({ history, total }: { history: (Side | null)[]; total: number }) {
   return (
-    <View style={styles.dots} accessible accessibilityLabel={`Throw ${Math.max(history.length, 1)} of ${total}`}>
+    <View
+      style={[styles.dots, total > 11 && styles.dotsSmall]}
+      accessible
+      accessibilityLabel={`Throw ${Math.max(history.length, 1)} of ${total}`}
+    >
       {Array.from({ length: total }, (_, i) => {
         const done = i < history.length;
         const winner = history[i];
@@ -280,6 +284,7 @@ function Dots({ history, total }: { history: (Side | null)[]; total: number }) {
             key={i}
             style={[
               styles.dot,
+              total > 11 && styles.dotSmall,
               done && {
                 backgroundColor: winner === null ? colors.tie : colors.players[winner],
                 borderColor: 'transparent',
@@ -328,6 +333,9 @@ const styles = StyleSheet.create({
   dots: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 10 },
   dot: { width: 16, height: 16, borderRadius: 8, borderWidth: 2, borderColor: colors.slotBorder },
   dotNext: { borderColor: colors.text },
+  // Long custom matches (up to 39 throws) need smaller dots to fit two rows.
+  dotsSmall: { gap: 5 },
+  dotSmall: { width: 10, height: 10, borderRadius: 5, borderWidth: 1.5 },
   arena: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
   middle: { height: 88, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 },
   counter: { color: colors.textMuted, fontSize: 18, fontWeight: '700' },

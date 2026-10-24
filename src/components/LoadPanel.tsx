@@ -142,12 +142,15 @@ export function LoadPanel({ playerName, color, length, timerSeconds, tiebreak, o
 const SLOT_GAP = 8;
 
 function slotSize(length: number): number {
-  return length <= 3 ? 72 : length <= 5 ? 56 : 44;
+  return length <= 3 ? 72 : length <= 5 ? 56 : length <= 11 ? 44 : 30;
 }
 
-/** Up to five slots sit in one row; longer matches split into two even rows. */
+/**
+ * Up to five slots sit in one row; up to eleven split into two even rows;
+ * longer custom matches (up to 39 throws) fill rows of eight small slots.
+ */
 function slotsWidth(length: number): number {
-  const perRow = length <= 5 ? length : Math.ceil(length / 2);
+  const perRow = length <= 5 ? length : length <= 11 ? Math.ceil(length / 2) : 8;
   return perRow * (slotSize(length) + SLOT_GAP);
 }
 
