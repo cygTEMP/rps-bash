@@ -1,0 +1,44 @@
+# Builds the signed Android App Bundle (.aab) for Google Play on EAS.
+# Run it by hand from the Actions tab ("Run workflow"). It needs the
+# EXPO_TOKEN repository secret (an Expo access token). EAS creates and keeps
+# the signing key on the first run, and raises the version code on each build.
+# The finished .aab is attached to the "release-<version>" GitHub release.
+name: Release build (Google Play)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Link the Expo project (creates it on the first run)
+        run: npx eas-cli@24.14.0 init --account stillmoths-team --non-interactive --force
+      - name: Build on EAS
+        run: |
+          npx eas-cli@24.14.0 build --platform android --profile production \
+            --non-interactive --wait --json > build.json
+          cat build.json
+      - name: Attach the .aab to a GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(node -p "require('./app.json').expo.version")
+          URL=$(node -p "require('./build.json')[0].artifacts.buildUrl")
+          curl -sSfL "$URL" -o "rps-bash-$VERSION.aab"
+          TAG="release-$VERSION"
+          gh release delete "$TAG" --yes --cleanup-tag || true
+          gh release create "$TAG" "rps-bash-$VERSION.aab" --prerelease --target "$GITHUB_SHA" \
+            --title "Google Play build $VERSION" --notes "Signed App Bundle for upload to Google Play. Built from ${GITHUB_SHA::7}."

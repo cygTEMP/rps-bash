@@ -1,0 +1,58 @@
+# Builds an installable Android test APK and attaches it to a GitHub release,
+# so it can be downloaded straight onto a phone. Pushes to main publish to the
+# "test-build" release; a pull request publishes to its own "pr-<number>"
+# release so changes can be tried before merging.
+#
+# Pull request builds are opt-in, so time on a PC (building locally) doesn't
+# spend GitHub builds: a pull request builds only while it carries the
+# "build-apk" label (adding the label starts a build, and each push rebuilds
+# while it stays on). Remove the label to stop. A manual run from the Actions
+# tab builds any branch.
+name: Android test APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    if: >-
+      github.event_name != 'pull_request' ||
+      (github.event.action == 'labeled' && github.event.label.name == 'build-apk') ||
+      (github.event.action != 'labeled' && contains(github.event.pull_request.labels.*.name, 'build-apk'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - run: npm ci
+      - run: npm test
+      - run: npx expo prebuild --platform android --no-install
+      - name: Build release APK (signed with the debug key, for testing only)
+        working-directory: android
+        # arm64 only: every current Android phone, and roughly half the build
+        # time of compiling the animation libraries' native code for four ABIs.
+        run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a
+      - name: Publish the APK as a release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.number) || github.ref_name == 'main' && 'test-build' || format('build-{0}', github.ref_name) }}
+          TITLE: ${{ github.event_name == 'pull_request' && format('Android test build for pull request {0}', github.event.number) || github.ref_name == 'main' && 'Android test build' || format('Android test build for {0}', github.ref_name) }}
+          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          cp android/app/build/outputs/apk/release/app-release.apk rps-bash.apk
+          gh release delete "$TAG" --yes --cleanup-tag || true
+          gh release create "$TAG" rps-bash.apk --prerelease --target "$SHA" \
+            --title "$TITLE" --notes "Built from ${SHA::7}. Testing only."
