@@ -2,7 +2,7 @@
  * How fast the reveal plays. Normal is slow enough for someone who has never
  * played to follow each throw; Fast is close to the first prototype's speed.
  */
-export type PaceId = 'slow' | 'normal' | 'fast';
+export type PaceId = 'verySlow' | 'slow' | 'normal' | 'fast' | 'veryFast';
 
 export interface Pace {
   id: PaceId;
@@ -11,10 +11,13 @@ export interface Pace {
   scale: number;
 }
 
+/** Slowest first. */
 export const PACES: readonly Pace[] = [
+  { id: 'verySlow', name: 'Very slow', scale: 2.25 },
   { id: 'slow', name: 'Slow', scale: 1.5 },
   { id: 'normal', name: 'Normal', scale: 1 },
   { id: 'fast', name: 'Fast', scale: 0.5 },
+  { id: 'veryFast', name: 'Very fast', scale: 0.3 },
 ];
 
 export const DEFAULT_PACE: PaceId = 'normal';

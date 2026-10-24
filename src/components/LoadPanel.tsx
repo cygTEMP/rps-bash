@@ -73,7 +73,9 @@ export function LoadPanel({ playerName, color, length, timerSeconds, tiebreak, o
     <View style={styles.root}>
       <View style={styles.header}>
         <Text style={[styles.kicker, { color }]}>{playerName}</Text>
-        <Text style={styles.title}>{tiebreak ? 'Tiebreak: one throw' : `Load ${length} ${length === 1 ? 'throw' : 'throws'}`}</Text>
+        <Text style={styles.title}>
+          {tiebreak ? 'Tiebreak: one throw' : `Load ${length} ${length === 1 ? 'throw' : 'throws'}`}
+        </Text>
         <Text style={styles.hint}>Keep them secret. They play out in order.</Text>
         {timerSeconds > 0 && (
           <Text style={[styles.timer, secondsLeft <= 3 && styles.timerLow]} accessibilityLiveRegion="polite">
@@ -82,14 +84,16 @@ export function LoadPanel({ playerName, color, length, timerSeconds, tiebreak, o
         )}
       </View>
 
-      <View style={styles.slots}>
+      <View style={[styles.slots, { maxWidth: slotsWidth(length) }]}>
         {Array.from({ length }, (_, i) => {
           const move = queue[i];
           return (
             <Pressable
               key={i}
               accessibilityRole="button"
-              accessibilityLabel={move ? `Throw ${i + 1}: ${throwSet.art[move].name}. Tap to remove.` : `Throw ${i + 1}: empty`}
+              accessibilityLabel={
+                move ? `Throw ${i + 1}: ${throwSet.art[move].name}. Tap to remove.` : `Throw ${i + 1}: empty`
+              }
               disabled={!move}
               onPress={() => removeAt(i)}
               style={styles.slot}
@@ -122,15 +126,29 @@ export function LoadPanel({ playerName, color, length, timerSeconds, tiebreak, o
       </View>
 
       <View style={styles.actions}>
-        <Button label="Clear" kind="ghost" onPress={() => update([])} disabled={queue.length === 0} style={styles.action} />
+        <Button
+          label="Clear"
+          kind="ghost"
+          onPress={() => update([])}
+          disabled={queue.length === 0}
+          style={styles.action}
+        />
         <Button label="Lock in" onPress={() => lock(queue)} disabled={!full} style={styles.action} />
       </View>
     </View>
   );
 }
 
+const SLOT_GAP = 8;
+
 function slotSize(length: number): number {
-  return length <= 3 ? 72 : length <= 5 ? 56 : 42;
+  return length <= 3 ? 72 : length <= 5 ? 56 : 44;
+}
+
+/** Up to five slots sit in one row; longer matches split into two even rows. */
+function slotsWidth(length: number): number {
+  const perRow = length <= 5 ? length : Math.ceil(length / 2);
+  return perRow * (slotSize(length) + SLOT_GAP);
 }
 
 const styles = StyleSheet.create({
@@ -141,7 +159,7 @@ const styles = StyleSheet.create({
   hint: { color: colors.textMuted, fontSize: 15 },
   timer: { color: colors.gold, fontSize: 28, fontWeight: '800', marginTop: 6 },
   timerLow: { color: colors.players[0] },
-  slots: { flexDirection: 'row', justifyContent: 'center', gap: 8 },
+  slots: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignSelf: 'center', gap: SLOT_GAP },
   slot: { alignItems: 'center' },
   emptySlot: {
     borderRadius: 12,

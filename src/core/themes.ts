@@ -24,7 +24,7 @@ export interface ThrowSet {
   verbs: Record<Move, string>;
 }
 
-export type ThrowSetId = 'hands' | 'swamp' | 'jungle' | 'frontier';
+export type ThrowSetId = 'hands' | 'swamp' | 'jungle' | 'frontier' | 'custom';
 
 export const THROW_SETS: readonly ThrowSet[] = [
   {
@@ -75,7 +75,49 @@ export const THROW_SETS: readonly ThrowSet[] = [
 
 export const DEFAULT_THROW_SET: ThrowSetId = 'hands';
 
-export function throwSetById(id: string | undefined): ThrowSet {
+/**
+ * The player's own set, kept as a circle: `a` beats `b`, `b` beats `c` and
+ * `c` beats `a`, each with its own verb ("Cat chases Mouse").
+ */
+export interface CustomSet {
+  pictures: [ThrowArt, ThrowArt, ThrowArt];
+  /** verbs[0]: a beats b, verbs[1]: b beats c, verbs[2]: c beats a. */
+  verbs: [string, string, string];
+}
+
+export const DEFAULT_CUSTOM_SET: CustomSet = {
+  pictures: [
+    { emoji: '\u{1F431}', name: 'Cat' },
+    { emoji: '\u{1F42D}', name: 'Mouse' },
+    { emoji: '\u{1F418}', name: 'Elephant' },
+  ],
+  verbs: ['chases', 'spooks', 'squashes'],
+};
+
+/**
+ * Maps a custom circle onto the moves: rock beats scissors beats paper beats
+ * rock, so a is rock, b is scissors and c is paper. Blank fields fall back to
+ * the default set so a half-finished set still plays.
+ */
+export function customThrowSet(custom: CustomSet | undefined): ThrowSet {
+  const pick = (i: 0 | 1 | 2): ThrowArt => {
+    const fallback = DEFAULT_CUSTOM_SET.pictures[i];
+    const p = custom?.pictures?.[i];
+    return { emoji: p?.emoji?.trim() || fallback.emoji, name: p?.name?.trim() || fallback.name };
+  };
+  const verb = (i: 0 | 1 | 2) => custom?.verbs?.[i]?.trim() || 'beats';
+  const [a, b, c] = [pick(0), pick(1), pick(2)];
+  return {
+    id: 'custom',
+    name: 'Your own',
+    blurb: `${a.name}, ${b.name}, ${c.name}`,
+    art: { rock: a, scissors: b, paper: c },
+    verbs: { rock: verb(0), scissors: verb(1), paper: verb(2) },
+  };
+}
+
+export function throwSetById(id: string | undefined, custom?: CustomSet): ThrowSet {
+  if (id === 'custom') return customThrowSet(custom);
   return THROW_SETS.find((s) => s.id === id) ?? THROW_SETS[0];
 }
 

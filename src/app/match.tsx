@@ -10,6 +10,7 @@ import { Reveal } from '../components/Reveal';
 import { botQueue } from '../core/bot';
 import { isTiebreak, MatchState, newMatch, Pair, playRound, queueLength, RoundResult, Side } from '../core/match';
 import { Move, presetById, winsNeeded } from '../core/rules';
+import { recordPartyWinner } from '../services/party';
 import { colors } from '../theme';
 
 type Phase =
@@ -24,10 +25,23 @@ type Phase =
  * load, then sits in the middle of the table for the reveal.
  */
 export default function MatchScreen() {
-  const params = useLocalSearchParams<{ mode?: string; preset?: string }>();
+  const params = useLocalSearchParams<{
+    mode?: string;
+    preset?: string;
+    /** Party bracket matches: the two players' names and where the match sits in the bracket. */
+    p1?: string;
+    p2?: string;
+    round?: string;
+    index?: string;
+  }>();
   const pass = params.mode === 'pass';
+  const party = params.round !== undefined && params.index !== undefined;
   const settings = presetById(params.preset).settings;
-  const names: Pair<string> = pass ? ['Player 1', 'Player 2'] : ['You', 'Bot'];
+  const names: Pair<string> = party
+    ? [params.p1 || 'Player 1', params.p2 || 'Player 2']
+    : pass
+      ? ['Player 1', 'Player 2']
+      : ['You', 'Bot'];
 
   const [match, setMatch] = useState<MatchState>(() => newMatch(settings));
   const [phase, setPhase] = useState<Phase>({ kind: 'load', side: 0 });
@@ -54,6 +68,11 @@ export default function MatchScreen() {
   };
 
   const afterReveal = () => {
+    if (party && match.winner !== null) {
+      // Player 1 is the bracket's first-listed player, player 2 the second.
+      const m = { round: Number(params.round), index: Number(params.index) };
+      recordPartyWinner(m.round, m.index, match.winner === 0 ? 'a' : 'b');
+    }
     setPhase(match.winner !== null ? { kind: 'result' } : { kind: 'load', side: 0 });
   };
 
@@ -103,13 +122,29 @@ export default function MatchScreen() {
       )}
 
       {phase.kind === 'result' && (
-        <ResultPanel match={match} names={names} onRematch={rematch} onHome={() => router.back()} />
+        <ResultPanel
+          match={match}
+          names={names}
+          onRematch={party ? undefined : rematch}
+          onHome={() => router.back()}
+          homeLabel={party ? 'Back to bracket' : 'Home'}
+        />
       )}
     </Felt>
   );
 }
 
-function Handoff({ title, body, action, onPress }: { title: string; body: string; action: string; onPress: () => void }) {
+function Handoff({
+  title,
+  body,
+  action,
+  onPress,
+}: {
+  title: string;
+  body: string;
+  action: string;
+  onPress: () => void;
+}) {
   return (
     <View style={styles.handoff}>
       <View style={styles.handoffText}>

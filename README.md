@@ -21,11 +21,11 @@ Everything the prototype uses (sound, haptics, animation) works in Expo Go as we
 
 ## How it plays (Phase 1 prototype)
 
-- **Modes:** against a bot on one phone, or pass and play for two players. In pass and play, player 2 loads after the phone is handed over, then the phone goes in the middle of the table for the reveal, with player 2's side turned to face them.
+- **Modes:** against a bot on one phone, pass and play for two players, or a party bracket where three to eight players pass one phone through a knockout tournament (byes fill the empty spots; `src/core/bracket.ts`). In pass and play, player 2 loads after the phone is handed over, then the phone goes in the middle of the table for the reveal, with player 2's side turned to face them.
 - **Load:** each player fills their throw slots in secret (tap a slot to take a throw back), then locks in. With a load timer, empty slots are filled at random when time runs out.
-- **Reveal:** throws are revealed in pairs until someone has enough wins, each with a plain sentence saying what happened ("Paper covers Rock", "Tie: both threw Rock"). It speeds up gently as it goes and the deciding throw plays in slow motion. If ties leave the match undecided when the queues run out, it goes to single tiebreak throws.
-- **Rules presets** (`src/core/rules.ts`): Quick (one throw) and Classic (best two out of three, the default). The engine also supports a load timer and best of 5 or 7 for later presets.
-- **Settings** (saved on the device): game speed Slow, Normal (default) or Fast (`src/core/pace.ts`), and the throw pictures (`src/core/themes.ts`): Rock, Paper, Scissors; Frog, Snake, Slug; Elephant, Person, Ant; Bear, Ninja, Cowboy. Every set plays the same circle underneath.
+- **Reveal:** throws are revealed in pairs until someone has enough wins, the winner's half of the screen lighting up in their colour. Against the bot a plain sentence also says what happened ("Paper covers Rock"); in pass and play the result has no words, so everyone around the table can read it. It speeds up gently as it goes and the deciding throw plays in slow motion. If ties leave the match undecided when the queues run out, it goes to single tiebreak throws.
+- **Match length** (`src/core/rules.ts`): 1 of 1, best 2 of 3 (the default), 3 of 5, 4 of 7, 5 of 9 or 6 of 11, picked from a 3 by 2 grid on the home screen. The engine also supports a load timer for later.
+- **Settings** (saved on the device): game speed Very slow, Slow, Normal (default), Fast or Very fast (`src/core/pace.ts`), and the throw pictures (`src/core/themes.ts`): Rock, Paper, Scissors; Frog, Snake, Slug; Elephant, Person, Ant; Bear, Ninja, Cowboy; or your own set of any three emoji with the words for who beats whom ("Cat chases Mouse"). Every set plays the same circle underneath.
 - **Points are for bragging only.** A throw win scores 100 times the winner's streak; combos add bonuses: Full circle (threw all three moves), Stubborn (same move three times in a row), Clean sweep (won without losing a throw). The match is decided on throws, never points.
 - **Friendly stakes:** the loser gets a real-life challenge (pick the next restaurant, clear the table) from a small deck. Nothing in the app is a bet, and points can never be bought or cashed out.
 
@@ -49,10 +49,10 @@ Everything the prototype uses (sound, haptics, animation) works in Expo Go as we
 ## Layout
 
 ```
-src/app/                   screens (Expo Router): home, match, settings
-src/core/                  rules, match engine, scoring, bot, challenges, throw sets, pace (pure, tested)
+src/app/                   screens (Expo Router): home, match, settings, custom set, party setup, bracket
+src/core/                  rules, match engine, scoring, bot, challenges, throw sets, pace, bracket (pure, tested)
 src/components/            load panel, reveal, scoreboard, result
-src/services/              sound, haptics, saved settings
+src/services/              sound, haptics, saved settings, party bracket in play
 src/theme.ts               colours
 scripts/                   sound and icon generators
 ```

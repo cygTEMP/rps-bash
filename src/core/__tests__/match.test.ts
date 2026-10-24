@@ -1,7 +1,7 @@
 import { botQueue, fillQueue } from '../bot';
 import { CHALLENGES, drawChallenge } from '../challenges';
 import { isTiebreak, newMatch, playRound, queueLength } from '../match';
-import { compare, Move, presetById, RuleSettings, winsNeeded } from '../rules';
+import { compare, Move, presetById, presetLabel, PRESETS, RuleSettings, winsNeeded } from '../rules';
 
 const classic: RuleSettings = { bestOf: 3, loadTimerSeconds: 0 };
 
@@ -26,6 +26,18 @@ describe('settings', () => {
     expect(presetById(undefined).settings).toEqual(classic);
     expect(presetById('nope').id).toBe('classic');
     expect(presetById('quick').settings.bestOf).toBe(1);
+  });
+
+  it('offers 1 of 1 up to best 6 of 11', () => {
+    expect(PRESETS.map(presetLabel)).toEqual([
+      '1 of 1',
+      'Best 2 of 3',
+      'Best 3 of 5',
+      'Best 4 of 7',
+      'Best 5 of 9',
+      'Best 6 of 11',
+    ]);
+    for (const p of PRESETS) expect(winsNeeded(p.settings)).toBe(p.wins);
   });
 });
 

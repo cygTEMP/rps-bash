@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../components/Button';
 import { Felt } from '../components/Felt';
 import { MoveCard } from '../components/MoveCard';
-import { PRESETS } from '../core/rules';
+import { presetLabel, PRESETS } from '../core/rules';
 import { useSettings } from '../services/settings';
 import { loadSounds } from '../services/sound';
 import { colors } from '../theme';
@@ -41,11 +41,16 @@ export default function Home() {
                   key={p.id}
                   accessibilityRole="radio"
                   accessibilityState={{ selected }}
+                  accessibilityLabel={presetLabel(p)}
                   onPress={() => update({ preset: p.id })}
                   style={[styles.preset, selected && styles.presetSelected]}
                 >
-                  <Text style={[styles.presetName, selected && styles.presetNameSelected]}>{p.name}</Text>
-                  <Text style={[styles.presetBlurb, selected && styles.presetBlurbSelected]}>{p.blurb}</Text>
+                  <Text style={[styles.presetBlurb, selected && styles.presetBlurbSelected]}>
+                    {p.bestOf === 1 ? 'One throw' : 'Best'}
+                  </Text>
+                  <Text style={[styles.presetName, selected && styles.presetNameSelected]}>
+                    {p.wins} of {p.bestOf}
+                  </Text>
                 </Pressable>
               );
             })}
@@ -55,6 +60,7 @@ export default function Home() {
         <View style={styles.section}>
           <Button label="Play the bot" onPress={() => start('bot')} />
           <Button label="Pass and play (2 players)" kind="ghost" onPress={() => start('pass')} />
+          <Button label="Party bracket (3 to 8 players)" kind="ghost" onPress={() => router.push('/party')} />
           <Button label="Settings" kind="ghost" onPress={() => router.push('/settings')} />
         </View>
 
@@ -66,7 +72,7 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, padding: 20, justifyContent: 'space-between' },
-  hero: { alignItems: 'center', marginTop: 24, gap: 8 },
+  hero: { alignItems: 'center', marginTop: 8, gap: 8 },
   cards: { flexDirection: 'row', gap: 10, marginBottom: 12 },
   tiltLeft: { transform: [{ rotate: '-10deg' }, { translateY: 8 }] },
   raised: { transform: [{ translateY: -4 }] },
@@ -75,19 +81,27 @@ const styles = StyleSheet.create({
   tagline: { color: colors.textMuted, fontSize: 16, textAlign: 'center' },
   section: { gap: 12 },
   label: { color: colors.textMuted, fontSize: 14, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 },
-  presets: { flexDirection: 'row', gap: 10 },
+  presets: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   preset: {
-    flex: 1,
+    flexBasis: '30%',
+    flexGrow: 1,
+    alignItems: 'center',
     borderRadius: 14,
-    padding: 12,
+    paddingVertical: 10,
     backgroundColor: colors.slot,
     borderWidth: 2,
     borderColor: 'transparent',
   },
   presetSelected: { backgroundColor: colors.card, borderColor: colors.gold },
-  presetName: { color: colors.text, fontSize: 17, fontWeight: '800' },
+  presetName: { color: colors.text, fontSize: 22, fontWeight: '900' },
   presetNameSelected: { color: colors.cardText },
-  presetBlurb: { color: colors.textMuted, fontSize: 13, marginTop: 2 },
+  presetBlurb: {
+    color: colors.textMuted,
+    fontSize: 12,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
   presetBlurbSelected: { color: colors.cardText, opacity: 0.75 },
   footer: { color: colors.textMuted, textAlign: 'center', fontSize: 13, opacity: 0.7 },
 });

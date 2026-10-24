@@ -9,12 +9,14 @@ import { Button } from './Button';
 interface Props {
   match: MatchState;
   names: Pair<string>;
-  onRematch: () => void;
+  /** Left out when there is no rematch, as in a party bracket. */
+  onRematch?: () => void;
   onHome: () => void;
+  homeLabel?: string;
 }
 
 /** End of the match: who won, the bragging points, and a friendly challenge for the loser. */
-export function ResultPanel({ match, names, onRematch, onHome }: Props) {
+export function ResultPanel({ match, names, onRematch, onHome, homeLabel = 'Home' }: Props) {
   const winner = match.winner ?? 0;
   const loser = winner === 0 ? 1 : 0;
   const [challenge, setChallenge] = useState(() => drawChallenge());
@@ -39,9 +41,7 @@ export function ResultPanel({ match, names, onRematch, onHome }: Props) {
           </View>
         ))}
         {combos.length > 0 && (
-          <Text style={styles.combos}>
-            {combos.map((c) => `${COMBOS[c.id].name} (${names[c.side]})`).join(' · ')}
-          </Text>
+          <Text style={styles.combos}>{combos.map((c) => `${COMBOS[c.id].name} (${names[c.side]})`).join(' · ')}</Text>
         )}
       </View>
 
@@ -57,8 +57,8 @@ export function ResultPanel({ match, names, onRematch, onHome }: Props) {
       </Text>
 
       <View style={styles.actions}>
-        <Button label="Home" kind="ghost" onPress={onHome} style={styles.action} />
-        <Button label="Rematch" onPress={onRematch} style={styles.action} />
+        <Button label={homeLabel} kind={onRematch ? 'ghost' : 'primary'} onPress={onHome} style={styles.action} />
+        {onRematch && <Button label="Rematch" onPress={onRematch} style={styles.action} />}
       </View>
     </View>
   );
@@ -77,7 +77,13 @@ const styles = StyleSheet.create({
   rowPoints: { color: colors.gold, fontSize: 20, fontWeight: '900', fontVariant: ['tabular-nums'] },
   combos: { color: colors.textMuted, fontSize: 13 },
   challenge: { backgroundColor: colors.card, borderRadius: 16, padding: 16, gap: 10 },
-  challengeKicker: { color: colors.cardText, opacity: 0.7, fontSize: 14, fontWeight: '800', textTransform: 'uppercase' },
+  challengeKicker: {
+    color: colors.cardText,
+    opacity: 0.7,
+    fontSize: 14,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+  },
   challengeText: { color: colors.cardText, fontSize: 22, fontWeight: '800' },
   note: { color: colors.textMuted, fontSize: 13, textAlign: 'center', lineHeight: 18 },
   actions: { flexDirection: 'row', gap: 12 },

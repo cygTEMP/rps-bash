@@ -6,7 +6,7 @@ import { Felt } from '../components/Felt';
 import { MoveCard } from '../components/MoveCard';
 import { PACES } from '../core/pace';
 import { MOVES } from '../core/rules';
-import { describeThrow, THROW_SETS } from '../core/themes';
+import { customThrowSet, describeThrow, ThrowSet, THROW_SETS } from '../core/themes';
 import { useSettings } from '../services/settings';
 import { colors } from '../theme';
 
@@ -43,7 +43,7 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <Text style={styles.label}>Throws</Text>
           <Text style={styles.hint}>Same game, different pictures. Each one beats the next in a circle.</Text>
-          {THROW_SETS.map((set) => {
+          {[...THROW_SETS, customThrowSet(settings.custom)].map((set: ThrowSet) => {
             const selected = set.id === settings.throwSet;
             return (
               <Pressable
@@ -69,6 +69,11 @@ export default function SettingsScreen() {
               </Pressable>
             );
           })}
+          <Button
+            label={settings.throwSet === 'custom' ? 'Edit your own set' : 'Make your own set'}
+            kind="ghost"
+            onPress={() => router.push('/custom-set')}
+          />
         </View>
 
         <Button label="Done" onPress={() => router.back()} />
@@ -88,18 +93,20 @@ const styles = StyleSheet.create({
   section: { gap: 10 },
   label: { color: colors.textMuted, fontSize: 14, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 },
   hint: { color: colors.textMuted, fontSize: 14 },
-  segments: { flexDirection: 'row', gap: 10 },
+  segments: { flexDirection: 'row', gap: 6 },
   segment: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 14,
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 2,
     borderRadius: 14,
     backgroundColor: colors.slot,
     borderWidth: 2,
     borderColor: 'transparent',
   },
   selected: { backgroundColor: colors.card, borderColor: colors.gold },
-  segmentText: { color: colors.text, fontSize: 17, fontWeight: '800' },
+  segmentText: { color: colors.text, fontSize: 14, fontWeight: '800', textAlign: 'center' },
   selectedText: { color: colors.cardText },
   set: {
     flexDirection: 'row',

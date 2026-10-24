@@ -1,6 +1,6 @@
 import { comboMs, paceById, PACES, throwTiming } from '../pace';
 import { compare, MOVES } from '../rules';
-import { describeThrow, throwSetById, THROW_SETS } from '../themes';
+import { customThrowSet, describeThrow, throwSetById, THROW_SETS } from '../themes';
 
 describe('throw sets', () => {
   it('has the classic set plus three more, twelve pictures in all', () => {
@@ -36,14 +36,45 @@ describe('throw sets', () => {
   });
 });
 
+describe('your own set', () => {
+  it('plays the circle in the order it was made', () => {
+    const set = customThrowSet({
+      pictures: [
+        { emoji: '🐱', name: 'Cat' },
+        { emoji: '🐭', name: 'Mouse' },
+        { emoji: '🧀', name: 'Cheese' },
+      ],
+      verbs: ['chases', 'nibbles', 'tempts'],
+    });
+    expect(describeThrow(set, 'rock', 'scissors')).toBe('Cat chases Mouse');
+    expect(describeThrow(set, 'scissors', 'paper')).toBe('Mouse nibbles Cheese');
+    expect(describeThrow(set, 'paper', 'rock')).toBe('Cheese tempts Cat');
+  });
+
+  it('fills blanks so a half-made set still plays', () => {
+    const set = throwSetById('custom', {
+      pictures: [
+        { emoji: ' ', name: '' },
+        { emoji: '🐭', name: 'Mouse' },
+        { emoji: '🐘', name: 'Elephant' },
+      ],
+      verbs: ['', 'spooks', 'squashes'],
+    });
+    expect(set.art.rock).toEqual({ emoji: '\u{1F431}', name: 'Cat' });
+    expect(describeThrow(set, 'rock', 'scissors')).toBe('Cat beats Mouse');
+    expect(throwSetById('custom').art.paper.name).toBe('Elephant');
+  });
+});
+
 describe('pace', () => {
-  it('defaults to Normal and orders Slow > Normal > Fast', () => {
+  it('defaults to Normal and runs from Very slow to Very fast', () => {
     expect(paceById(undefined).id).toBe('normal');
-    const [slow, normal, fast] = PACES;
-    const total = (p: typeof slow) => throwTiming(0, false, p).flyMs + throwTiming(0, false, p).holdMs;
-    expect(total(slow)).toBeGreaterThan(total(normal));
-    expect(total(normal)).toBeGreaterThan(total(fast));
-    expect(comboMs(slow)).toBeGreaterThan(comboMs(fast));
+    expect(PACES.map((p) => p.id)).toEqual(['verySlow', 'slow', 'normal', 'fast', 'veryFast']);
+    const total = (p: (typeof PACES)[number]) => throwTiming(0, false, p).flyMs + throwTiming(0, false, p).holdMs;
+    for (let i = 1; i < PACES.length; i++) {
+      expect(total(PACES[i - 1])).toBeGreaterThan(total(PACES[i]));
+      expect(comboMs(PACES[i - 1])).toBeGreaterThan(comboMs(PACES[i]));
+    }
   });
 
   it('speeds up gently and slows down for the deciding throw', () => {

@@ -3,16 +3,26 @@ import { createContext, ReactNode, useContext, useEffect, useState } from 'react
 
 import { DEFAULT_PACE, Pace, paceById, PaceId } from '../core/pace';
 import { DEFAULT_PRESET, PresetId, presetById } from '../core/rules';
-import { DEFAULT_THROW_SET, ThrowSet, throwSetById, ThrowSetId } from '../core/themes';
+import { CustomSet, DEFAULT_CUSTOM_SET, DEFAULT_THROW_SET, ThrowSet, throwSetById, ThrowSetId } from '../core/themes';
 
 /** Player choices kept on the device between launches. */
 export interface Settings {
   throwSet: ThrowSetId;
   pace: PaceId;
   preset: PresetId;
+  /** The make-your-own set, kept even while another set is picked. */
+  custom: CustomSet;
+  /** Names from the last party bracket. */
+  partyNames: string[];
 }
 
-const DEFAULTS: Settings = { throwSet: DEFAULT_THROW_SET, pace: DEFAULT_PACE, preset: DEFAULT_PRESET };
+const DEFAULTS: Settings = {
+  throwSet: DEFAULT_THROW_SET,
+  pace: DEFAULT_PACE,
+  preset: DEFAULT_PRESET,
+  custom: DEFAULT_CUSTOM_SET,
+  partyNames: [],
+};
 const KEY = 'rps-bash/settings/v1';
 
 interface SettingsContext {
@@ -39,9 +49,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         const saved = JSON.parse(raw) as Partial<Settings>;
         // Unknown ids (from an older version) fall back to the defaults.
         setSettings({
-          throwSet: throwSetById(saved.throwSet).id,
+          throwSet: saved.throwSet === 'custom' ? 'custom' : throwSetById(saved.throwSet).id,
           pace: paceById(saved.pace).id,
           preset: presetById(saved.preset).id,
+          custom: saved.custom ?? DEFAULT_CUSTOM_SET,
+          partyNames: Array.isArray(saved.partyNames) ? saved.partyNames.filter((n) => typeof n === 'string') : [],
         });
       })
       .catch(() => {});
@@ -57,7 +69,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   return (
     <Context.Provider
-      value={{ settings, throwSet: throwSetById(settings.throwSet), pace: paceById(settings.pace), update }}
+      value={{
+        settings,
+        throwSet: throwSetById(settings.throwSet, settings.custom),
+        pace: paceById(settings.pace),
+        update,
+      }}
     >
       {children}
     </Context.Provider>
