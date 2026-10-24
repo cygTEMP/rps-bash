@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '../components/Button';
 import { Felt } from '../components/Felt';
+import { GearIcon } from '../components/GearIcon';
 import { MoveCard } from '../components/MoveCard';
 import { presetLabel, PRESETS } from '../core/rules';
 import { useSettings } from '../services/settings';
@@ -61,10 +62,19 @@ export default function Home() {
           <Button label="Play the bot" onPress={() => start('bot')} />
           <Button label="Pass and play (2 players)" kind="ghost" onPress={() => start('pass')} />
           <Button label="Party bracket (3 to 8 players)" kind="ghost" onPress={() => router.push('/party')} />
-          <Button label="Settings" kind="ghost" onPress={() => router.push('/settings')} />
         </View>
 
         <Text style={styles.footer}>by stillmoth</Text>
+
+        <Pressable
+          onPress={() => router.push('/settings')}
+          hitSlop={10}
+          style={styles.gear}
+          accessibilityRole="button"
+          accessibilityLabel="Settings"
+        >
+          <GearIcon color={colors.textMuted} />
+        </Pressable>
       </View>
     </Felt>
   );
@@ -103,5 +113,14 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   presetBlurbSelected: { color: colors.cardText, opacity: 0.75 },
+  gear: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   footer: { color: colors.textMuted, textAlign: 'center', fontSize: 13, opacity: 0.7 },
 });
