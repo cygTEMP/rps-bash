@@ -24,7 +24,7 @@ export function ResultPanel({ match, names, onRematch, onHome }: Props) {
     <View style={styles.root}>
       <View style={styles.top}>
         <Text style={[styles.kicker, { color: colors.players[winner] }]}>Match over</Text>
-        <Text style={styles.title}>{names[winner]} wins!</Text>
+        <Text style={styles.title}>{names[winner] === 'You' ? 'You win!' : `${names[winner]} wins!`}</Text>
         <Text style={styles.score}>
           {match.wins[winner]} to {match.wins[loser]} in throws
         </Text>
@@ -46,7 +46,7 @@ export function ResultPanel({ match, names, onRematch, onHome }: Props) {
       </View>
 
       <View style={styles.challenge}>
-        <Text style={styles.challengeKicker}>{names[loser]}&rsquo;s challenge</Text>
+        <Text style={styles.challengeKicker}>{names[loser] === 'You' ? 'Your' : `${names[loser]}’s`} challenge</Text>
         <Text style={styles.challengeText}>{challenge}</Text>
         <Button label="Draw another" kind="ghost" onPress={() => setChallenge(drawChallenge(challenge))} />
       </View>

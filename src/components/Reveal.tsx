@@ -10,7 +10,10 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { Combo, COMBOS, Pair, RoundResult, ThrowResult } from '../core/match';
+import { comboMs, throwTiming } from '../core/pace';
+import { describeThrow, ThrowSet } from '../core/themes';
 import * as haptics from '../services/haptics';
+import { useSettings } from '../services/settings';
 import { play, playWin } from '../services/sound';
 import { colors } from '../theme';
 import { MoveCard } from './MoveCard';
@@ -32,11 +35,13 @@ const CARD = 128;
 
 /**
  * The reveal: each pair of throws flies in and clashes in the middle, one
- * after another, speeding up as it goes. The deciding throw plays in slow
- * motion. Combos are announced at the end.
+ * after another, with a plain sentence saying who beat whom. It speeds up
+ * gently as it goes and the deciding throw plays in slow motion, all scaled
+ * by the player's game speed setting. Combos are announced at the end.
  */
 export function Reveal({ round, names, winsNeeded, startWins, startPoints, flipTop, onDone }: Props) {
   const { height } = useWindowDimensions();
+  const { pace, throwSet } = useSettings();
   const [current, setCurrent] = useState<ThrowResult | null>(null);
   const [landed, setLanded] = useState(false);
   const [index, setIndex] = useState(0);
@@ -59,13 +64,11 @@ export function Reveal({ round, names, winsNeeded, startWins, startPoints, flipT
       new Promise<void>((resolve, reject) => setTimeout(() => (cancelled ? reject(new Error('cancelled')) : resolve()), ms));
 
     const run = async () => {
-      await wait(350);
+      await wait(500 * pace.scale);
       let total: Pair<number> = [...startPoints];
       for (let i = 0; i < round.throws.length; i++) {
         const t = round.throws[i];
-        // Speeds up throw by throw; the deciding throw goes slow motion.
-        const pace = t.decisive ? 1.8 : Math.max(0.55, 0.85 ** i);
-        const fly = 360 * pace;
+        const { flyMs, holdMs } = throwTiming(i, t.decisive, pace);
 
         topY.value = -height;
         bottomY.value = height;
@@ -79,9 +82,9 @@ export function Reveal({ round, names, winsNeeded, startWins, startPoints, flipT
 
         play('whoosh');
         const easing = Easing.in(Easing.quad);
-        topY.value = withTiming(0, { duration: fly, easing });
-        bottomY.value = withTiming(0, { duration: fly, easing });
-        await wait(fly);
+        topY.value = withTiming(0, { duration: flyMs, easing });
+        bottomY.value = withTiming(0, { duration: flyMs, easing });
+        await wait(flyMs);
 
         play(t.winner === null ? 'tie' : 'clash');
         haptics.clash(t.decisive);
@@ -106,7 +109,7 @@ export function Reveal({ round, names, winsNeeded, startWins, startPoints, flipT
 
         await wait(110);
         if (t.winner !== null) playWin(t.multiplier);
-        await wait((t.decisive ? 1400 : 750) * pace);
+        await wait(holdMs);
       }
 
       for (const c of round.combos) {
@@ -116,7 +119,7 @@ export function Reveal({ round, names, winsNeeded, startWins, startPoints, flipT
         banner.value = 0;
         banner.value = withSpring(1, { damping: 9 });
         play('combo');
-        await wait(1100);
+        await wait(comboMs(pace));
       }
       setCombo(null);
 
@@ -172,7 +175,7 @@ export function Reveal({ round, names, winsNeeded, startWins, startPoints, flipT
               </Text>
             </Animated.View>
           ) : current && landed ? (
-            <Outcome result={current} names={names} />
+            <Outcome result={current} names={names} set={throwSet} />
           ) : (
             <Text style={styles.counter}>
               Throw {index + 1} of {total}
@@ -188,17 +191,25 @@ export function Reveal({ round, names, winsNeeded, startWins, startPoints, flipT
   );
 }
 
-function Outcome({ result, names }: { result: ThrowResult; names: Pair<string> }) {
+function Outcome({ result, names, set }: { result: ThrowResult; names: Pair<string>; set: ThrowSet }) {
+  const reason = describeThrow(set, result.moves[0], result.moves[1]);
   if (result.winner === null) {
-    return <Text style={[styles.outcome, { color: colors.tie }]}>Tie</Text>;
+    return (
+      <View style={styles.outcomeRow}>
+        <Text style={[styles.reason, { color: colors.tie }]}>{reason}</Text>
+        <Text style={styles.verdict}>No one scores</Text>
+      </View>
+    );
   }
   const side = result.winner;
   return (
     <View style={styles.outcomeRow}>
-      <Text style={[styles.outcome, { color: colors.players[side] }]}>
-        {result.decisive ? `${names[side]} takes it!` : `${names[side]} +${result.points[side]}`}
+      <Text style={styles.reason}>{reason}</Text>
+      <Text style={[styles.verdict, { color: colors.players[side] }]}>
+        {result.decisive
+          ? `${names[side]} ${names[side] === 'You' ? 'win' : 'wins'} the match!`
+          : `${names[side]} +${result.points[side]}${result.multiplier > 1 ? `  (x${result.multiplier} streak)` : ''}`}
       </Text>
-      {result.multiplier > 1 && <Text style={styles.streak}>x{result.multiplier} streak</Text>}
     </View>
   );
 }
@@ -206,11 +217,11 @@ function Outcome({ result, names }: { result: ThrowResult; names: Pair<string> }
 const styles = StyleSheet.create({
   root: { flex: 1, justifyContent: 'space-between' },
   arena: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
-  middle: { height: 64, alignItems: 'center', justifyContent: 'center' },
+  middle: { height: 88, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 },
   counter: { color: colors.textMuted, fontSize: 18, fontWeight: '700' },
-  outcomeRow: { alignItems: 'center' },
-  outcome: { fontSize: 28, fontWeight: '900' },
-  streak: { color: colors.gold, fontSize: 16, fontWeight: '800' },
+  outcomeRow: { alignItems: 'center', gap: 4 },
+  reason: { color: colors.text, fontSize: 26, fontWeight: '900', textAlign: 'center' },
+  verdict: { color: colors.textMuted, fontSize: 18, fontWeight: '800', textAlign: 'center' },
   comboBanner: {
     backgroundColor: colors.gold,
     borderRadius: 14,

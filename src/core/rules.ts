@@ -34,7 +34,7 @@ export function winsNeeded(settings: RuleSettings): number {
   return Math.floor(settings.bestOf / 2) + 1;
 }
 
-export type PresetId = 'quick' | 'classic' | 'speed' | 'marathon';
+export type PresetId = 'quick' | 'classic';
 
 export interface Preset {
   id: PresetId;
@@ -46,8 +46,6 @@ export interface Preset {
 export const PRESETS: readonly Preset[] = [
   { id: 'quick', name: 'Quick', blurb: 'One throw decides it', settings: { bestOf: 1, loadTimerSeconds: 0 } },
   { id: 'classic', name: 'Classic', blurb: 'Best two out of three', settings: { bestOf: 3, loadTimerSeconds: 0 } },
-  { id: 'speed', name: 'Speed', blurb: 'Best of three, 10 seconds to load', settings: { bestOf: 3, loadTimerSeconds: 10 } },
-  { id: 'marathon', name: 'Marathon', blurb: 'Best four out of seven', settings: { bestOf: 7, loadTimerSeconds: 0 } },
 ];
 
 export const DEFAULT_PRESET: PresetId = 'classic';

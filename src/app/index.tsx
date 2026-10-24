@@ -1,16 +1,18 @@
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '../components/Button';
 import { Felt } from '../components/Felt';
 import { MoveCard } from '../components/MoveCard';
-import { DEFAULT_PRESET, PresetId, PRESETS } from '../core/rules';
+import { PRESETS } from '../core/rules';
+import { useSettings } from '../services/settings';
 import { loadSounds } from '../services/sound';
 import { colors } from '../theme';
 
 export default function Home() {
-  const [preset, setPreset] = useState<PresetId>(DEFAULT_PRESET);
+  const { settings, update } = useSettings();
+  const preset = settings.preset;
 
   useEffect(loadSounds, []);
 
@@ -39,7 +41,7 @@ export default function Home() {
                   key={p.id}
                   accessibilityRole="radio"
                   accessibilityState={{ selected }}
-                  onPress={() => setPreset(p.id)}
+                  onPress={() => update({ preset: p.id })}
                   style={[styles.preset, selected && styles.presetSelected]}
                 >
                   <Text style={[styles.presetName, selected && styles.presetNameSelected]}>{p.name}</Text>
@@ -53,6 +55,7 @@ export default function Home() {
         <View style={styles.section}>
           <Button label="Play the bot" onPress={() => start('bot')} />
           <Button label="Pass and play (2 players)" kind="ghost" onPress={() => start('pass')} />
+          <Button label="Settings" kind="ghost" onPress={() => router.push('/settings')} />
         </View>
 
         <Text style={styles.footer}>by stillmoth</Text>
@@ -72,10 +75,9 @@ const styles = StyleSheet.create({
   tagline: { color: colors.textMuted, fontSize: 16, textAlign: 'center' },
   section: { gap: 12 },
   label: { color: colors.textMuted, fontSize: 14, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 },
-  presets: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  presets: { flexDirection: 'row', gap: 10 },
   preset: {
-    flexBasis: '47%',
-    flexGrow: 1,
+    flex: 1,
     borderRadius: 14,
     padding: 12,
     backgroundColor: colors.slot,

@@ -4,21 +4,24 @@ import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { SettingsProvider } from '../services/settings';
 import { colors } from '../theme';
 
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <GestureHandlerRootView style={styles.root}>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            animation: 'fade',
-            contentStyle: { backgroundColor: colors.feltBottom },
-          }}
-        />
-        <StatusBar style="light" />
-      </GestureHandlerRootView>
+      <SettingsProvider>
+        <GestureHandlerRootView style={styles.root}>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              animation: 'fade',
+              contentStyle: { backgroundColor: colors.feltBottom },
+            }}
+          />
+          <StatusBar style="light" />
+        </GestureHandlerRootView>
+      </SettingsProvider>
     </SafeAreaProvider>
   );
 }

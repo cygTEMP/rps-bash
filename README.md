@@ -23,8 +23,9 @@ Everything the prototype uses (sound, haptics, animation) works in Expo Go as we
 
 - **Modes:** against a bot on one phone, or pass and play for two players. In pass and play, player 2 loads after the phone is handed over, then the phone goes in the middle of the table for the reveal, with player 2's side turned to face them.
 - **Load:** each player fills their throw slots in secret (tap a slot to take a throw back), then locks in. With a load timer, empty slots are filled at random when time runs out.
-- **Reveal:** throws are revealed in pairs until someone has enough wins. Each clash speeds up a little; the deciding throw plays in slow motion. If ties leave the match undecided when the queues run out, it goes to single tiebreak throws.
-- **Rules presets** (`src/core/rules.ts`): Quick (one throw), Classic (best two out of three, the default), Speed (best of three with a 10-second load timer), Marathon (best four out of seven).
+- **Reveal:** throws are revealed in pairs until someone has enough wins, each with a plain sentence saying what happened ("Paper covers Rock", "Tie: both threw Rock"). It speeds up gently as it goes and the deciding throw plays in slow motion. If ties leave the match undecided when the queues run out, it goes to single tiebreak throws.
+- **Rules presets** (`src/core/rules.ts`): Quick (one throw) and Classic (best two out of three, the default). The engine also supports a load timer and best of 5 or 7 for later presets.
+- **Settings** (saved on the device): game speed Slow, Normal (default) or Fast (`src/core/pace.ts`), and the throw pictures (`src/core/themes.ts`): Rock, Paper, Scissors; Frog, Snake, Slug; Elephant, Person, Ant; Bear, Ninja, Cowboy. Every set plays the same circle underneath.
 - **Points are for bragging only.** A throw win scores 100 times the winner's streak; combos add bonuses: Full circle (threw all three moves), Stubborn (same move three times in a row), Clean sweep (won without losing a throw). The match is decided on throws, never points.
 - **Friendly stakes:** the loser gets a real-life challenge (pick the next restaurant, clear the table) from a small deck. Nothing in the app is a bet, and points can never be bought or cashed out.
 
@@ -48,10 +49,10 @@ Everything the prototype uses (sound, haptics, animation) works in Expo Go as we
 ## Layout
 
 ```
-src/app/                   screens (Expo Router): home, match
-src/core/                  rules, match engine, scoring, bot, challenges (pure, tested)
+src/app/                   screens (Expo Router): home, match, settings
+src/core/                  rules, match engine, scoring, bot, challenges, throw sets, pace (pure, tested)
 src/components/            load panel, reveal, scoreboard, result
-src/services/              sound, haptics
+src/services/              sound, haptics, saved settings
 src/theme.ts               colours
 scripts/                   sound and icon generators
 ```

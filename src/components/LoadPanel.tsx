@@ -4,10 +4,11 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { fillQueue } from '../core/bot';
 import { Move, MOVES } from '../core/rules';
 import * as haptics from '../services/haptics';
+import { useSettings } from '../services/settings';
 import { play } from '../services/sound';
 import { colors } from '../theme';
 import { Button } from './Button';
-import { MOVE_ART, MoveCard } from './MoveCard';
+import { MoveCard } from './MoveCard';
 
 interface Props {
   playerName: string;
@@ -20,6 +21,7 @@ interface Props {
 
 /** The load phase: one player secretly queues their throws, then locks them in. */
 export function LoadPanel({ playerName, color, length, timerSeconds, tiebreak, onLocked }: Props) {
+  const { throwSet } = useSettings();
   const [queue, setQueue] = useState<Move[]>([]);
   const [secondsLeft, setSecondsLeft] = useState(timerSeconds);
   const locked = useRef(false);
@@ -87,7 +89,7 @@ export function LoadPanel({ playerName, color, length, timerSeconds, tiebreak, o
             <Pressable
               key={i}
               accessibilityRole="button"
-              accessibilityLabel={move ? `Throw ${i + 1}: ${MOVE_ART[move].label}. Tap to remove.` : `Throw ${i + 1}: empty`}
+              accessibilityLabel={move ? `Throw ${i + 1}: ${throwSet.art[move].name}. Tap to remove.` : `Throw ${i + 1}: empty`}
               disabled={!move}
               onPress={() => removeAt(i)}
               style={styles.slot}
@@ -109,7 +111,7 @@ export function LoadPanel({ playerName, color, length, timerSeconds, tiebreak, o
           <Pressable
             key={move}
             accessibilityRole="button"
-            accessibilityLabel={`Add ${MOVE_ART[move].label}`}
+            accessibilityLabel={`Add ${throwSet.art[move].name}`}
             disabled={full}
             onPress={() => add(move)}
             style={({ pressed }) => [full && styles.dim, pressed && styles.pressed]}

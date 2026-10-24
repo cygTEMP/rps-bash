@@ -25,7 +25,7 @@ describe('settings', () => {
   it('defaults to Classic, best two out of three', () => {
     expect(presetById(undefined).settings).toEqual(classic);
     expect(presetById('nope').id).toBe('classic');
-    expect(presetById('marathon').settings.bestOf).toBe(7);
+    expect(presetById('quick').settings.bestOf).toBe(1);
   });
 });
 
